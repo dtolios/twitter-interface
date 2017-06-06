@@ -4,6 +4,7 @@
   "description": "A simple express application that utilizes the Twitter API to create a custom user interface.",
   "main": "app.js",
   "scripts": {
+    "start": "nodemon ./app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -15,8 +16,13 @@
   ],
   "author": "Dimitri Tolios",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dtolios/twitter-interface.git"
+  },
   "dependencies": {
     "express": "^4.15.3",
-    "pug": "^2.0.0-rc.2"
+    "pug": "^2.0.0-rc.2",
+    "twit": "^2.2.5"
   }
 }
