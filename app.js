@@ -31,11 +31,21 @@ const requestFriends = function(req, res, next) {
 
 };
 
+const requestSentMessages = function(req, res, next) {
+	const T = new Twit(config);
+
+	T.get('direct_messages/sent', { count : 5 }, function(err, data) {
+		req.requestSentMessages = data;
+		next();
+	})
+};
+
 app.use(requestTweets);
 app.use(requestFriends);
+app.use(requestSentMessages);
 
 app.get('/', function(req, res) {
-	res.render('index', { tweets : req.requestTweets , friends : req.requestFriends });
+	res.render('index', { tweets : req.requestTweets , friends : req.requestFriends , sentMessages : req.requestSentMessages });
 });
 
 app.use(function(req, res, next) {

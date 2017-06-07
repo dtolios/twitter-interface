@@ -69,34 +69,15 @@ block content
     .grid-33
       .app--section
         ul.app--message--list
-          li
-            h3
-              | Conversation with
-              a  Jill Spore
-            ul.app--message--conversation
-              li.app--message
-                .app--avatar(style='background-image: url(public/images/f-spore.png)')
-                  img(src='public/images/f-spore.png')
-                p.app--message--text How are things?
-                p.app--message--timestamp 3 hours ago
-              li.app--message--me
-                .app--avatar(style='background-image: url(public/images/m-spore.png)')
-                  img(src='public/images/m-spore.png')
-                p.app--message--text
-                  | Great! How about you? Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                p.app--message--timestamp 2 hours ago
-              li.app--message
-                .app--avatar(style='background-image: url(public/images/f-spore.png)')
-                  img(src='public/images/f-spore.png')
-                p.app--message--text Fantastic! You wanna grab lunch?
-                p.app--message--timestamp 2 hours ago
-              li.app--message--me
-                .app--avatar(style='background-image: url(public/images/m-spore.png)')
-                  img(src='public/images/m-spore.png')
-                p.app--message--text Totes mcgotes. How about Mackey's?
-                p.app--message--timestamp 1 hour ago
-              li.app--message
-                .app--avatar(style='background-image: url(public/images/f-spore.png)')
-                  img(src='public/images/f-spore.png')
-                p.app--message--text Aww yeah.. I'm craving a Triple Quarter Mack!
-                p.app--message--timestamp 1 hour ago
+          each message in sentMessages
+            li
+              h3
+                | Conversation with
+                a  #{message.recipient.name}
+              ul.app--message--conversation
+                li.app--message--me
+                  .app--avatar(style=`background-image: url(${message.sender.profile_image_url})`)
+                    img(src=`${message.sender.profile_image_url}`)
+                  p.app--message--text
+                    | #{message.text}
+                  p.app--message--timestamp 2 hours ago

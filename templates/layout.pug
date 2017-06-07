@@ -10,7 +10,7 @@ html(lang='en')
     link(rel='stylesheet', href='public/stylesheets/global.css')
   body
     block header
-      header.circle--header
+      header.circle--header(style= `background-size: contain; background-color: transparent; background-image: url(${sentMessages[0].sender.profile_background_image_url})`)
         .bounds
           .circle--fluid
             .circle--fluid--cell
