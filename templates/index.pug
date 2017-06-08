@@ -8,7 +8,7 @@ block content
           h2 Timeline
       .grid-33
         .app--section--heading
-          strong 129
+          strong #{userData.friends_count}
           h2 Following
       .grid-33
         .app--section--heading
@@ -20,8 +20,8 @@ block content
             li
               strong.app--tweet--timestamp #{tweet.created_at}
               a.app--tweet--author
-                .app--avatar(style=`background-image: url(${tweet.user.profile_image_url})`)
-                  img(src=`${tweet.user.profile_image_url}`)
+                .app--avatar(style='background-image: url('+tweet.user.profile_image_url+')')
+                  img(src=tweet.user.profile_image_url)
                 h4 #{tweet.user.name}
                 |  #{tweet.user.screen_name}
               p #{tweet.text}
@@ -59,8 +59,8 @@ block content
               .circle--fluid
                 .circle--fluid--cell.circle--fluid--primary
                   a.app--tweet--author
-                    .app--avatar(style=`background-image: url(${friend.profile_image_url})`)
-                      img(src=`${friend.profile_image_url}`)
+                    .app--avatar(style='background-image: url('+friend.profile_image_url+')')
+                      img(src=friend.profile_image_url)
                     h4 #{friend.name}
                     p @#{friend.screen_name}
                 .circle--fluid--cell
@@ -76,8 +76,8 @@ block content
                 a  #{message.recipient.name}
               ul.app--message--conversation
                 li.app--message--me
-                  .app--avatar(style=`background-image: url(${message.sender.profile_image_url})`)
-                    img(src=`${message.sender.profile_image_url}`)
+                  .app--avatar(style='background-image: url('+message.sender.profile_image_url+')')
+                    img(src=message.sender.profile_image_url)
                   p.app--message--text
                     | #{message.text}
                   p.app--message--timestamp 2 hours ago
