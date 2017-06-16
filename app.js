@@ -1,16 +1,13 @@
-
+const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
-
 const Twit = require('twit');
-const io = require('socket.io')(app);
+// const io = require('socket.io')(app);
 
 const config = require('./config.js');
 
-app.set('views', './templates');
 app.set('view engine', 'pug');
-
-app.use('/public', express.static('public'));
+app.set('views', __dirname + '/templates');
 
 const requestUserInfo = function(req, res, next) {
 	const T = new Twit(config);
@@ -19,25 +16,23 @@ const requestUserInfo = function(req, res, next) {
 		req.twitterUserData = data;
 		next();
 	});
-
 };
 
 const requestTweets = function(req, res, next) {
 	const T = new Twit(config);
-	const stream = T.stream('statuses/fjlter', {track : `@${req.twitterUserData.screen_name}`});
+	// const stream = T.stream('statuses/fjlter', {track : `@${req.twitterUserData.screen_name}`});
 
-	stream.on('tweet', function() {
-        T.get('statuses/user_timeline', { screen_name: req.twitterUserData.screen_name, count: 5 }, function(err, data) {
-            req.requestTweets = data;
-            next();
-        });
-    });
+    // stream.on('tweet', function() {
+    //     T.get('statuses/user_timeline', { screen_name: req.twitterUserData.screen_name, count: 5 }, function(err, data) {
+    //         req.requestTweets = data;
+    //         next();
+    //     });
+    // });
 
 	T.get('statuses/user_timeline', { screen_name: req.twitterUserData.screen_name, count: 5 }, function(err, data) {
         req.requestTweets = data;
         next();
 	});
-
 };
 
 const requestFriends = function(req, res, next) {
@@ -47,7 +42,6 @@ const requestFriends = function(req, res, next) {
         req.requestFriends = data.users;
         next();
     });
-
 };
 
 const requestSentMessages = function(req, res, next) {
@@ -59,13 +53,33 @@ const requestSentMessages = function(req, res, next) {
 	})
 };
 
-app.use(requestUserInfo);
-app.use(requestTweets);
-app.use(requestFriends);
-app.use(requestSentMessages);
+const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-app.get('/', function(req, res) {
-	res.render('index', { userData : req.twitterUserData , tweets : req.requestTweets , friends : req.requestFriends , sentMessages : req.requestSentMessages });
+app.use(express.static(__dirname + '/public'));
+app.use(requestUserInfo);
+
+app.get('/', requestTweets, requestFriends, requestSentMessages, function(req, res) {
+	res.render('index', {
+	    userData     : req.twitterUserData,
+        tweets       : req.requestTweets,
+        friends      : req.requestFriends,
+        sentMessages : req.requestSentMessages
+	});
+});
+
+app.post('/tweet', urlencodedParser, function(req, res) {
+    if(!req.body || req.body.tweet === '') {
+    	return res.sendStatus(400);
+    }
+    const T = new Twit(config);
+    T.post('statuses/update', { status: req.body.tweet }, function(err, data, response){
+        if(err) {
+        	console.error(err);
+        	return res.sendStatus(400);
+		}
+		res.sendStatus(200);
+        res.end();
+    });
 });
 
 app.use(function(req, res, next) {
@@ -83,6 +97,6 @@ app.listen(3000, function() {
 	console.log('Example app listening on port 3000!')
 });
 
-io.on('connection', function(socket) {
-	socket.emit('tweet stream', )
-});
+// io.on('connection', function(socket) {
+// 	socket.emit('tweet stream', )
+// });
