@@ -13,8 +13,19 @@ const requestUserInfo = function(req, res, next) {
 	const T = new Twit(config);
 
 	T.get('account/verify_credentials', { skip_status : true }, function(err, data) {
+		if(err) console.error(err);
 		req.twitterUserData = data;
 		next();
+	});
+};
+
+const requestBannerImage = function(req, res, next) {
+	const T = new Twit(config);
+
+    T.get('users/profile_banner', {screen_name: req.twitterUserData.screen_name}, function(err, data){
+    	if(err) console.error(err);
+    	req.profileBannerURL = data.sizes.web_retina.url;
+    	next();
 	});
 };
 
@@ -57,13 +68,15 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 app.use(express.static(__dirname + '/public'));
 app.use(requestUserInfo);
+app.use(requestBannerImage);
 
 app.get('/', requestTweets, requestFriends, requestSentMessages, function(req, res) {
 	res.render('index', {
-	    userData     : req.twitterUserData,
-        tweets       : req.requestTweets,
-        friends      : req.requestFriends,
-        sentMessages : req.requestSentMessages
+		userData         : req.twitterUserData,
+		profileBannerURL : req.profileBannerURL,
+		tweets           : req.requestTweets,
+		friends          : req.requestFriends,
+		sentMessages     : req.requestSentMessages
 	});
 });
 
@@ -94,7 +107,7 @@ app.use(function(err, req, res, next){
 });
 
 app.listen(3000, function() {
-	console.log('Example app listening on port 3000!')
+	console.log('App listening on port 3000!')
 });
 
 // io.on('connection', function(socket) {
