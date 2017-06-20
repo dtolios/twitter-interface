@@ -38,9 +38,15 @@ socket.on('tweet', function(data) {
 	        </ul>
         </li>`;
     const $tweetList = $('.app--tweet--list');
-    $tweetList.prepend(newTweet);
-    if($tweetList.children().length > 5) {
-        $tweetList.children().last().remove();
+
+    window.setTimeout(addTweet, 1000);
+
+    function addTweet() {
+        $tweetList.prepend(newTweet);
+
+        if ($tweetList.children().length > 5) {
+            $tweetList.children().last().remove();
+        }
     }
 });
 
@@ -50,9 +56,9 @@ $('button').on('click', function () {
         url: '/tweet',
         data: {tweet: $('#tweet-textarea').val()},
         dataType: 'text'
-    }).done(function () {
+    }).success(function () {
         $.notify('Tweet Sent', 'success');
-    }).fail(function () {
+    }).error(function () {
         $.notify('Tweet failed. Please check your input and try again!', 'error');
     });
 });
