@@ -7,7 +7,7 @@ socket.on('tweet', function(data) {
         `<li>
             <strong class="app--tweet--timestamp">${data.created_at}</strong>
 	        <a class="app--tweet--author">
-		        <div class="app--avatar" style="background-image: url("${data.user.profile_image_url}");">
+		        <div class="app--avatar" style="background-image: url('${data.user.profile_image_url}')">
 			        <img src="${data.user.profile_image_url}">
 		        </div>
 		        <h4>${data.user.name}</h4> ${data.user.screen_name}
@@ -39,7 +39,7 @@ socket.on('tweet', function(data) {
         </li>`;
     const $tweetList = $('.app--tweet--list');
 
-    window.setTimeout(addTweet, 1000);
+    window.setTimeout(addTweet, 100);
 
     function addTweet() {
         $tweetList.prepend(newTweet);
