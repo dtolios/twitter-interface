@@ -1,102 +1,71 @@
-"use strict";
+'use strict';
 
 const bodyParser = require('body-parser');
 const express = require('express');
-const app = express();
 const Twit = require('twit');
-// const io = require('socket.io')(app);
-
 const config = require('./config.js');
+
+const app = express();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
 
 app.set('view engine', 'pug');
 app.set('views', __dirname + '/templates');
 
-const requestUserInfo = function (req, next) {
+const requestUserInfo = function (req, res, next) {
     const T = new Twit(config);
 
     T.get('account/verify_credentials', {skip_status: true}, function (err, data) {
-        if (err) {
-            console.error(err);
-        }
         req.twitterUserData = data;
         next();
     });
 };
 
-const requestBannerImage = function (req, next) {
+const requestBannerImage = function (req, res, next) {
     const T = new Twit(config);
 
     T.get('users/profile_banner', {screen_name: req.twitterUserData.screen_name}, function (err, data) {
-        if (err) {
-            console.error(err);
-        }
         req.profileBannerURL = data.sizes.web_retina.url;
         next();
     });
 };
 
-const requestTweets = function (req, next) {
+const requestTweets = function (req, res, next) {
     const T = new Twit(config);
-    // const stream = T.stream('statuses/fjlter', {track : `@${req.twitterUserData.screen_name}`});
-
-    // stream.on('tweet', function() {
-    //     T.get('statuses/user_timeline', { screen_name: req.twitterUserData.screen_name, count: 5 }, function(err, data) {
-    //         req.requestTweets = data;
-    //         next();
-    //     });
-    // });
 
     T.get('statuses/user_timeline', {screen_name: req.twitterUserData.screen_name, count: 5}, function (err, data) {
-        if (err) {
-            console.error(err);
-        }
         req.requestTweets = data;
         next();
     });
 };
 
-const requestFriends = function (req, next) {
+const requestFriends = function (req, res, next) {
     const T = new Twit(config);
 
     T.get('friends/list', {screen_name: req.twitterUserData.screen_name, count: 5}, function (err, data) {
-        if (err) {
-            console.error(err);
-        }
         req.requestFriends = data.users;
         next();
     });
 };
 
-const requestSentMessages = function (req, next) {
+const requestSentMessages = function (req, res, next) {
     const T = new Twit(config);
 
     T.get('direct_messages/sent', {count: 5}, function (err, data) {
-        if (err) {
-            console.error(err);
-        }
         req.requestSentMessages = data;
         next();
     });
 };
 
-const urlencodedParser = bodyParser.urlencoded({extended: false});
+const renderIndex = function (req, res) {
+    io.on('connection', function (socket) {
+        const T = new Twit(config);
+        const stream = T.stream('statuses/filter', {follow: `${req.twitterUserData.id}`});
+        stream.on('tweet', function(tweet) {
+            socket.emit('tweet', tweet);
+        });
+    });
 
-app.use(express.static(__dirname + '/public'));
-app.use(requestUserInfo);
-app.use(requestBannerImage);
-
-app.use(function (res) {
-    res.status(404);
-    res.redirect('/error');
-});
-
-app.use(function (err, res) {
-    console.error(err.stack);
-    res.status(500);
-    res.redirect('/error');
-});
-
-app.get('/', requestTweets, requestFriends, requestSentMessages, function (req, res) {
     res.render('index', {
         userData: req.twitterUserData,
         profileBannerURL: req.profileBannerURL,
@@ -104,13 +73,9 @@ app.get('/', requestTweets, requestFriends, requestSentMessages, function (req, 
         friends: req.requestFriends,
         sentMessages: req.requestSentMessages
     });
-});
+};
 
-app.get('/error', function (res) {
-    res.render('error');
-});
-
-app.post('/tweet', urlencodedParser, function (req, res) {
+const postTweet = function (req, res) {
     if (!req.body || req.body.tweet === '') {
         return res.sendStatus(400);
     }
@@ -123,8 +88,28 @@ app.post('/tweet', urlencodedParser, function (req, res) {
         res.sendStatus(200);
         res.end();
     });
-});
+};
 
-app.listen(3000, function () {
+const handle404 = function (req, res) {
+    res.status(400);
+    res.render('error', {title: '404: File Not Found'});
+};
+
+const handle500 = function (err, req, res) {
+    res.status(500);
+    res.render('error', {title: '500: Internal Server Error', error: err});
+};
+
+const urlencodedParser = bodyParser.urlencoded({extended: false});
+
+app.use(express.static(__dirname + '/public'));
+app.use(requestUserInfo);
+app.use(requestBannerImage);
+app.get('/', requestTweets, requestFriends, requestSentMessages, renderIndex);
+app.post('/tweet', urlencodedParser, postTweet);
+
+app.use(handle404);
+app.use(handle500);
+server.listen(3000, function () {
     console.log('App listening on port 3000!');
 });

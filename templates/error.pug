@@ -1,5 +1,11 @@
 extends layout
 
 block content
-    .bounds.app--body
-        h1 Oops! It looks like the page you're trying to reach does not exist!
+    .row
+        .error(style={width: '50%', margin: 'auto'})
+            h1 Oops! Something went wrong with your request.
+            p #{title}
+            if error
+                p Error: #{error}
+            .error-img(style={width: '50%', margin: 'auto'})
+                img(src='images/sadDog.jpg', style={width: '450px'})
