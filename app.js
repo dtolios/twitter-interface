@@ -34,6 +34,9 @@ const requestTweets = function (req, res, next) {
     const T = new Twit(config);
 
     T.get('statuses/user_timeline', {screen_name: req.twitterUserData.screen_name, count: 5}, function (err, data) {
+        for(let i = 0; i < data.length; i += 1) {
+            data[i].created_at = parseTwitterDate(data[i].created_at);
+        }
         req.requestTweets = data;
         next();
     });
@@ -62,6 +65,7 @@ const renderIndex = function (req, res) {
         const T = new Twit(config);
         const stream = T.stream('statuses/filter', {follow: `${req.twitterUserData.id}`});
         stream.on('tweet', function(tweet) {
+            tweet.created_at = parseTwitterDate(tweet.created_at);
             socket.emit('tweet', tweet);
         });
     });
@@ -113,3 +117,10 @@ app.use(handle500);
 server.listen(3000, function () {
     console.log('App listening on port 3000!');
 });
+
+
+function parseTwitterDate(aDate)
+{
+    const date = new Date(Date.parse(aDate.replace(/( \+)/, ' UTC$1')));
+    return date.toDateString();
+}
