@@ -52,14 +52,19 @@ socket.on('tweet', function(data) {
 
 $('button').on('click', function () {
     $.ajax({
-        type: 'POST',
+        method: 'POST',
         url: '/tweet',
         data: {tweet: $('#tweet-textarea').val()},
-        dataType: 'text'
-    }).success(function () {
-        $.notify('Tweet Sent', 'success');
-    }).error(function () {
-        $.notify('Tweet failed. Please check your input and try again!', 'error');
+        dataType: 'text',
+        success: successNotify,
+        error: errorNotify
     });
 });
 
+function successNotify() {
+    $.notify('Tweet Sent', 'success');
+}
+
+function errorNotify() {
+    $.notify('Tweet failed. Please check your input and try again!', 'error');
+}
