@@ -3,12 +3,20 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const Twit = require('twit');
-const config = require('./config.js');
+// const config = require('./config.js'); Use this method if not deploying with Heroku
+const config = {
+    consumer_key:         process.env.CONSUMER_KEY,
+    consumer_secret:      process.env.CONSUMER_SECRET,
+    access_token:         process.env.ACCESS_TOKEN,
+    access_token_secret:  process.env.ACCESS_TOKEN_SECRET,
+    timeout_ms:           process.env.TIMEOUT_MS
+};
 
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
+app.set('port', (process.env.PORT || 5000));
 app.set('view engine', 'pug');
 app.set('views', __dirname + '/templates');
 
@@ -114,13 +122,12 @@ app.post('/tweet', urlencodedParser, postTweet);
 
 app.use(handle404);
 app.use(handle500);
-server.listen(3000, function () {
-    console.log('App listening on port 3000!');
+
+server.listen(app.get('port'), function() {
+    console.log('Node app is running on port', app.get('port'));
 });
 
-
-function parseTwitterDate(aDate)
-{
+function parseTwitterDate(aDate) {
     const date = new Date(Date.parse(aDate.replace(/( \+)/, ' UTC$1')));
     return date.toDateString();
 }
